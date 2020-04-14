@@ -1,5 +1,5 @@
-#version 430 core
-#extension GL_ARB_gpu_shader_fp64 : enable
+#version 410 core
+precision highp float;
 
 in vec4 gl_FragCoord;
 uniform vec2 complexLocation;

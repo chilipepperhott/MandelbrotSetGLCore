@@ -66,11 +66,13 @@ namespace MandelbrotSetGLCore
 
         protected override void OnLoad()
         {
+            //With OpenTK on .NET Core, we have to load OpenGL bindings before we use them
             GL.LoadBindings(new GLFWBindingsContext());
             GL.ClearColor(0, 0, 0, 0);
 
             //Load shader
             shader = new Shader("shader.vert", "shader.frag");
+            shader.Use();
 
             //Define the buffer that contains the raw vertex data
             VertexBufferObject = GL.GenBuffer();
@@ -86,14 +88,12 @@ namespace MandelbrotSetGLCore
             VertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(VertexArrayObject);
 
-            //Re-add the element buffer for use when rendering faces
+            //Re-add the element buffer and vertex buffer for use when rendering faces
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
 
             GL.VertexAttribPointer(0, 4, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
-
-            //DO I need this?
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
         }
 
         //When the program ends, do some cleanup
@@ -207,13 +207,14 @@ namespace MandelbrotSetGLCore
             GL.BindVertexArray(VertexArrayObject);
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
 
-            //Always done at end
+            //Always done at end of rendering
             SwapBuffers();
 
+            //Printing to console in the default windows console causes huge performance bottlenecks
             //Print info about the current view
-            string info = $"\rWidth:{Width} Height:{Height} RenderTime: {s.ElapsedMilliseconds}ms Location: {cLocation.Y} + {cLocation.Y}i Zoom: {zoom}";
-            Console.Clear();
-            Console.Write(info);
+            //string info = $"\rWidth:{Width} Height:{Height} RenderTime: {s.ElapsedMilliseconds}ms Location: {cLocation.Y} + {cLocation.Y}i Zoom: {zoom}";
+            //Console.Clear();
+            //Console.Write(info);
 
             //Save screenshot
             if (keyboard.IsKeyDown(Key.H)) Capture().Save("image.bmp");
